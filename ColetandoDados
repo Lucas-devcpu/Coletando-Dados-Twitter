@@ -3,9 +3,9 @@ import re
 from datetime import datetime
 from textblob import TextBlob
 
-CONSUMER_KEY = '2Pa4kELzUNk2ySa6d1bXzQdfH'
+CONSUMER_KEY = '...'
 CONSUMER_SECRET = 'GFWpLjikar5W0yySkQKsHuL0fSNj5kxDG56dq09gkFniKXXKiD'
-ACCESS_TOKEN = '1372604758880612352-cEhcjlNcJh7MIfGUjWvmvkRyMyBvEx'
+ACCESS_TOKEN = '......'
 ACCESS_TOKEN_SECRET = 'pPuVnsN3DD1NVPKd4FkpWkA1DJ5OS4E7Rd3sUsejlUXRh'
 
 keyword =("Isolamento", "Lockdown")
