@@ -1,0 +1,67 @@
+import tweepy
+import re
+from datetime import datetime
+from textblob import TextBlob
+
+CONSUMER_KEY = '2Pa4kELzUNk2ySa6d1bXzQdfH'
+CONSUMER_SECRET = 'GFWpLjikar5W0yySkQKsHuL0fSNj5kxDG56dq09gkFniKXXKiD'
+ACCESS_TOKEN = '1372604758880612352-cEhcjlNcJh7MIfGUjWvmvkRyMyBvEx'
+ACCESS_TOKEN_SECRET = 'pPuVnsN3DD1NVPKd4FkpWkA1DJ5OS4E7Rd3sUsejlUXRh'
+
+keyword =("Isolamento", "Lockdown")
+count = 50
+
+class TweetAnalyzer():
+
+  def __init__(self, consumer_key, consumer_secret, access_token, access_token_secret):
+
+    auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+
+    auth.set_access_token(access_token, access_token_secret)
+
+    self.conToken = tweepy.API(auth, wait_on_rate_limit = True,
+                            wait_on_rate_limit_notify = True,
+                            retry_count=5 , retry_delay=10)
+    
+  def __clean_tweet(self, tweets_text):
+
+    clean_text = re.sub(r'RT+',"",tweets_text)
+    clean_text = re.sub(r'@\S+',"", clean_text)
+    clean_text = re.sub(r'https\S+',"", clean_text)
+    clean_text = clean_text.replace("\n","")
+
+    return clean_text
+
+  def search_by_keyword(self, keyword, count=200, result_type='mixed',lang='pt', tweet_mode='extended'):
+    tweets_iter = tweepy.Cursor(self.conToken.search,
+                                q=keyword, tweet_mode = tweet_mode,
+                                rpp=count, result_type=result_type,
+                                since=datetime(2019,1,1,0,0,0).date(),
+                                lang=lang, include_entities=True).items(count)
+
+    return tweets_iter
+
+  def prepare_tweets_list(self, tweets_iter):
+    tweets_data_list = []
+    for tweet in tweets_iter:
+      if not 'retweeted_status' in dir(tweet):
+        tweet_text = self.__clean_tweet(tweet.full_text)
+        tweets_data = {
+            'User' : tweet.user.screen_name,
+            'UserName' : tweet.user.name,
+            'UserLocation' : tweet.user.location,
+            'TweetText' : tweet_text,
+            'Date' : tweet.created_at,
+            }
+
+        tweets_data_list.append(tweets_data)
+
+    return tweets_data_list
+ 
+analyzer = TweetAnalyzer(consumer_key = CONSUMER_KEY, consumer_secret = CONSUMER_SECRET, 
+                         access_token = ACCESS_TOKEN, access_token_secret=ACCESS_TOKEN_SECRET)
+
+tweets_iter = analyzer.search_by_keyword(keyword, count)
+tweets_list = analyzer.prepare_tweets_list(tweets_iter)
+
+tweets_df = pd.DataFrame(tweets_list)
